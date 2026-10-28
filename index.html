@@ -1,0 +1,715 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Escape from the Haunted School</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Creepster&family=Atkinson+Hyperlegible:wght@400;700&display=swap">
+<style>
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0}
+img{max-width:100%}
+[hidden]{display:none!important}
+
+/* Layout: a night-time stage — title, ghost-narrated story, corridor of 8 doors, puzzle rooms, midnight countdown, opening gate. Deliberate single dark look. */
+:root{
+  --night:#120d24; --night-2:#1e1638; --night-3:#2e2454;
+  --moon:#f6efd9; --mist:#bdb3dc; --pumpkin:#ff8a1f; --slime:#8fe36b; --blood:#ff5470; --glow:#ffd36b;
+  --display:"Creepster","Chiller",fantasy,cursive;
+  --body:"Atkinson Hyperlegible","Verdana",system-ui,sans-serif;
+  color-scheme:dark;
+}
+html,body{height:100%}
+body{background:var(--night);color:var(--moon);font-family:var(--body);font-size:18px;line-height:1.45;overflow-x:hidden}
+#sky{position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:radial-gradient(circle at 82% 12%, #fff7dd 0 46px, rgba(255,240,200,.22) 47px 72px, transparent 130px),
+  radial-gradient(ellipse at 50% 130%, #3a2a6a, transparent 65%), var(--night)}
+#fog{position:fixed;inset:0;z-index:1;pointer-events:none;width:100%;height:100%}
+#flash{position:fixed;inset:0;z-index:60;pointer-events:none;background:#fff;opacity:0}
+#flash.on{animation:flash .7s}
+@keyframes flash{0%{opacity:0}8%{opacity:.6}18%{opacity:0}28%{opacity:.4}100%{opacity:0}}
+#redflash{position:fixed;inset:0;z-index:59;pointer-events:none;box-shadow:inset 0 0 160px 40px rgba(255,40,80,.0);transition:box-shadow .2s}
+#redflash.on{box-shadow:inset 0 0 160px 40px rgba(255,40,80,.55)}
+.bat{position:fixed;z-index:2;pointer-events:none;animation:fly linear infinite}
+@keyframes fly{from{transform:translate(-80px,0)}to{transform:translate(calc(100vw + 80px),-60px)}}
+.bat svg{animation:flap .22s ease-in-out infinite alternate;display:block}
+@keyframes flap{from{transform:scaleY(1)}to{transform:scaleY(.4)}}
+.swoop{position:fixed;z-index:58;pointer-events:none;top:30%;left:0;width:200px;animation:swoop 1.4s ease-in forwards}
+@keyframes swoop{0%{transform:translate(-220px,40px) rotate(-10deg) scale(.8);opacity:0}15%{opacity:.95}50%{transform:translate(45vw,-60px) rotate(8deg) scale(1.3)}100%{transform:translate(calc(100vw + 220px),20px) rotate(-6deg) scale(.9);opacity:0}}
+.wrap{position:relative;z-index:3;max-width:1000px;margin:0 auto;padding-block:18px 48px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
+  display:flex;flex-direction:column;gap:18px}
+header{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px}
+.logo{font-family:var(--display);font-size:clamp(1.6rem,4vw,2.4rem);color:var(--pumpkin);margin:0;line-height:1;text-shadow:0 3px 0 #000}
+.team{color:var(--mist);font-size:.95rem}
+.hud{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.chip{display:flex;align-items:center;gap:8px;background:var(--night-2);border:2px solid var(--night-3);border-radius:12px;padding:6px 12px}
+.chip .lbl{font-size:.72rem;color:var(--mist);text-transform:uppercase;letter-spacing:.1em}
+.chip output{font-variant-numeric:tabular-nums;font-size:1.45rem;font-weight:700;min-width:2ch;text-align:center}
+#timerBox output{min-width:4.2ch}
+#timerBox.low output{color:var(--blood);animation:pulse 1s infinite}
+@keyframes pulse{50%{opacity:.35}}
+#candyOut.bump{animation:pop .4s}
+.slots{display:flex;gap:6px}
+.slot{width:40px;height:48px;display:grid;place-items:center;border:2px dashed var(--mist);border-radius:8px;font-family:var(--display);font-size:1.8rem;color:var(--slime)}
+.slot.got{border-style:solid;border-color:var(--slime);background:rgba(143,227,107,.1);box-shadow:0 0 12px rgba(143,227,107,.4)}
+.slot.new{animation:pop .6s}
+@keyframes pop{50%{transform:scale(1.35)}}
+button{font:inherit;cursor:pointer;border-radius:10px;border:2px solid var(--mist);background:transparent;color:var(--moon);padding:8px 14px}
+button:hover{border-color:var(--pumpkin);color:var(--pumpkin)}
+button:focus-visible,input:focus-visible{outline:3px solid var(--glow);outline-offset:2px}
+.icon-btn{padding:6px 10px;font-size:1.2rem}
+.big-btn{font-family:var(--display);font-size:2rem;padding:10px 34px;border-color:var(--pumpkin);color:var(--pumpkin);background:rgba(255,138,31,.08);letter-spacing:.05em;box-shadow:0 0 24px rgba(255,138,31,.25)}
+.big-btn:hover{background:var(--pumpkin);color:var(--night)}
+.toast{position:fixed;left:50%;top:22%;z-index:61;transform:translateX(-50%);font-family:var(--display);font-size:clamp(2.2rem,7vw,4rem);color:var(--glow);text-shadow:0 4px 0 #000,0 0 30px rgba(255,140,0,.8);pointer-events:none;animation:toast 1.4s ease-out forwards;white-space:nowrap}
+@keyframes toast{0%{opacity:0;transform:translate(-50%,20px) scale(.6)}20%{opacity:1;transform:translate(-50%,0) scale(1.1)}70%{opacity:1}100%{opacity:0;transform:translate(-50%,-30px)}}
+/* Intro */
+.intro{min-height:78vh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;text-align:center}
+.intro h1{font-family:var(--display);font-weight:400;font-size:clamp(3rem,11vw,6.5rem);line-height:.95;margin:0;color:var(--pumpkin);text-shadow:0 4px 0 #000,0 0 30px rgba(255,138,31,.45);text-wrap:balance;animation:flicker 4s infinite}
+@keyframes flicker{0%,18%,22%,62%,64%,100%{opacity:1}20%,63%{opacity:.3}}
+.intro .tag{color:var(--mist);font-size:1.1rem;margin:0}
+.school{width:min(520px,100%);height:auto}
+.win-light{animation:winlight 3s infinite}
+.win-light:nth-child(2n){animation-delay:1.3s}
+@keyframes winlight{0%,40%{fill:#ffd36b}50%,90%{fill:#2e2454}}
+.story{display:flex;gap:18px;align-items:flex-end;max-width:820px;width:100%;flex-wrap:wrap;justify-content:center}
+.gh{flex:none;animation:float 3s ease-in-out infinite}
+.gh svg{display:block;width:100%;height:auto}
+.gh.mad{animation:float 3s ease-in-out infinite, madshake .4s}
+.gh .brow{opacity:0;transition:opacity .2s}
+.gh.mad .brow{opacity:1}
+.gh.mad .body{fill:#ffd0d8}
+.gh.happy .cheek{opacity:1}
+@keyframes float{50%{transform:translateY(-12px)}}
+@keyframes madshake{25%{translate:-6px 0}75%{translate:6px 0}}
+.bubble{position:relative;flex:1;min-width:220px;background:var(--moon);color:var(--night);border-radius:20px;padding:18px 20px;text-align:left;font-size:1.25rem;min-height:5.5em}
+.bubble::after{content:"";position:absolute;left:-14px;bottom:28px;border:14px solid transparent;border-right-color:var(--moon);border-left:0}
+.bubble b{color:#b3400a}
+.bubble.bad{background:#ffd6dd}.bubble.bad::after{border-right-color:#ffd6dd}
+.bubble.good{background:#dcf8cf}.bubble.good::after{border-right-color:#dcf8cf}
+.name-form{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+.name-form input{font:inherit;font-size:1.3rem;padding:10px 14px;border-radius:10px;border:2px solid var(--mist);background:var(--night-2);color:var(--moon);width:min(320px,100%)}
+.hint{color:var(--mist);font-size:.9rem;margin:0}
+/* Corridor */
+.doors{display:grid;grid-template-columns:repeat(auto-fit,minmax(165px,1fr));gap:16px}
+.door{position:relative;display:flex;flex-direction:column;align-items:center;gap:6px;padding:0;border:none;background:none;color:var(--moon);perspective:700px}
+.door:hover{color:var(--moon)}
+.frame{position:relative;width:100%;aspect-ratio:3/4;max-width:100%;border-radius:80px 80px 6px 6px;background:radial-gradient(circle at 50% 60%,#2a1f4a,#06040d);border:5px solid #5a4630;overflow:hidden;display:grid;place-items:center;box-shadow:0 10px 30px rgba(0,0,0,.6)}
+.frame .inside{font-family:var(--display);font-size:4.2rem;color:var(--slime);text-shadow:0 0 24px rgba(143,227,107,.8)}
+.leaf{position:absolute;inset:0;border-radius:76px 76px 2px 2px;transform-origin:left center;transition:transform .9s cubic-bezier(.3,.7,.2,1);
+  background:repeating-linear-gradient(90deg,#6b4a2b 0 18px,#5c3f24 18px 20px);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:10px;text-align:center}
+.leaf .no{font-family:var(--display);font-size:2.4rem;color:var(--glow);text-shadow:0 2px 0 #000}
+.leaf .ico{font-size:2.3rem;filter:drop-shadow(0 2px 0 #000)}
+.leaf .knob{position:absolute;right:14px;top:58%;width:12px;height:12px;border-radius:50%;background:var(--glow);box-shadow:0 0 8px var(--glow)}
+.leaf .eyes{position:absolute;top:24%;display:flex;gap:10px;opacity:0;transition:opacity .3s}
+.leaf .eyes i{width:9px;height:9px;border-radius:50%;background:#ffef6b;box-shadow:0 0 8px #ffef6b}
+.door:hover .leaf{transform:rotateY(-14deg)}
+.door:hover .eyes{opacity:1}
+.door.done .leaf{transform:rotateY(-105deg)}
+.door .name{font-weight:700}
+.door .topic{color:var(--mist);font-size:.85rem;text-align:center}
+.door.exit .frame{border-color:var(--pumpkin)}
+.door.exit .leaf{background:repeating-linear-gradient(90deg,#3a3a46 0 10px,#22222c 10px 14px)}
+.door.exit.ready .frame{box-shadow:0 0 30px rgba(255,138,31,.7);animation:pulse 1.4s infinite}
+.guide{display:flex;gap:14px;align-items:center}
+.guide .bubble{font-size:1.05rem;min-height:auto;padding:12px 16px}
+/* Room */
+.room{background:rgba(30,22,56,.92);border:2px solid var(--night-3);border-radius:18px;padding:20px;display:flex;flex-direction:column;gap:14px;backdrop-filter:blur(3px)}
+.room-top{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.room h2{font-family:var(--display);font-weight:400;font-size:2.3rem;margin:0;color:var(--pumpkin);line-height:1.05}
+.progress{display:flex;gap:6px}
+.progress i{flex:1;height:10px;border-radius:5px;background:var(--night-3)}
+.progress i.ok{background:var(--slime);box-shadow:0 0 8px rgba(143,227,107,.6)}
+.streak{color:var(--glow);font-weight:700;min-height:1.4em;margin:0}
+.q{display:flex;flex-direction:column;gap:14px;align-items:flex-start}
+.prompt{font-size:1.6rem;font-weight:700;margin:0;max-width:32ch}
+.prompt .es{display:block;font-size:1rem;font-weight:400;color:var(--mist)}
+.opts{display:flex;flex-direction:column;gap:10px;width:100%;max-width:560px}
+.opts button{text-align:left;font-size:1.2rem;padding:12px 16px;background:var(--night);transition:transform .15s}
+.opts button:hover{transform:translateX(6px)}
+.typed{display:flex;gap:10px;flex-wrap:wrap}
+.typed input{font:inherit;font-size:1.4rem;padding:10px 12px;border-radius:10px;border:2px solid var(--mist);background:var(--night);color:var(--moon);width:min(280px,100%)}
+.react{display:flex;gap:12px;align-items:center;min-height:70px}
+.react .bubble{font-size:1.05rem;min-height:auto;padding:10px 14px;flex:0 1 auto}
+.shake{animation:shake .35s}
+@keyframes shake{25%{transform:translateX(-7px)}75%{transform:translateX(7px)}}
+.clockbox{display:flex;gap:20px;align-items:center;flex-wrap:wrap}
+svg.clock{width:210px;max-width:100%;height:auto;filter:drop-shadow(0 0 18px rgba(255,138,31,.4))}
+.reward{display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center;padding:16px}
+.key{font-family:var(--display);font-size:7rem;color:var(--slime);line-height:1;text-shadow:0 0 34px rgba(143,227,107,.8);animation:keyin 1s cubic-bezier(.2,1.4,.4,1)}
+@keyframes keyin{0%{transform:scale(0) rotate(-200deg);opacity:0}100%{transform:none;opacity:1}}
+/* Gate */
+.gate{position:relative;width:min(420px,100%);aspect-ratio:4/3;perspective:900px;margin:0 auto;border-radius:12px 12px 0 0;overflow:hidden;
+  background:radial-gradient(circle at 70% 25%,#fff7dd 0 26px,rgba(255,240,200,.3) 27px 46px,transparent 80px),linear-gradient(#3a2a6a,#1c1533 70%,#0e2a14)}
+.gate .half{position:absolute;top:0;bottom:0;width:50%;background:repeating-linear-gradient(90deg,transparent 0 16px,#16161d 16px 24px),linear-gradient(#22222c,#22222c) top/100% 14px no-repeat,linear-gradient(#22222c,#22222c) bottom 30%/100% 10px no-repeat;
+  border:6px solid #16161d;transition:transform 2.2s cubic-bezier(.5,0,.2,1)}
+.gate .l{left:0;transform-origin:left center}.gate .r{right:0;transform-origin:right center}
+.gate.open .l{transform:rotateY(80deg)}.gate.open .r{transform:rotateY(-80deg)}
+.gate .lock{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font-size:2.6rem;transition:opacity .4s}
+.gate.open .lock{opacity:0}
+.win{text-align:center;padding:20px 16px;display:flex;flex-direction:column;gap:12px;align-items:center}
+.win .big{font-family:var(--display);font-size:clamp(3rem,10vw,6rem);color:var(--slime);line-height:1;text-shadow:0 0 30px rgba(143,227,107,.6)}
+#confetti{position:fixed;inset:0;z-index:57;pointer-events:none}
+.teacher{color:var(--mist);font-size:.9rem;position:relative;z-index:3}
+.teacher summary{cursor:pointer}
+.teacher table{border-collapse:collapse;margin-top:8px}
+.teacher td{padding:3px 10px 3px 0;vertical-align:top}
+.muted{color:var(--mist)}
+.tiles{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+.tile{width:58px;height:66px;display:grid;place-items:center;border-radius:10px;background:var(--moon);color:var(--night);font-family:var(--display);font-size:2.4rem;box-shadow:0 4px 0 #8a7d5a}
+.tile:nth-child(odd){transform:rotate(-4deg)}.tile:nth-child(even){transform:rotate(3deg)}
+.key-words{font-family:var(--body);font-weight:700;font-size:clamp(2.2rem,7vw,3.6rem)}
+.answer{min-height:76px;display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:12px;border:3px dashed var(--glow);border-radius:14px;background:rgba(255,211,107,.06)}
+.answer .end{font-size:2rem;font-weight:700;color:var(--glow)}
+.tile.word{width:auto;height:auto;padding:10px 14px;font-family:var(--body);font-weight:700;font-size:1.4rem;border:none;cursor:pointer;color:var(--night);background:var(--moon)}
+.tile.word:hover{background:var(--glow);color:var(--night)}
+#answer .tile.word{transform:none;background:var(--glow)}
+.row-btns{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+#buyHint{align-self:flex-start}
+.diploma{background:var(--moon);color:var(--night);border-radius:16px;padding:20px 22px;max-width:480px;width:100%;text-align:center;border:6px double var(--medal);box-shadow:0 0 40px rgba(255,211,107,.35);display:flex;flex-direction:column;gap:4px}
+.diploma p{margin:0}
+.diploma .tr{color:#5b4a96}
+.dip-top{font-size:.8rem;letter-spacing:.12em;text-transform:uppercase;color:#6b5a3a}
+.medal{font-size:4.5rem;line-height:1.1;margin-top:10px;animation:pop .8s}
+.dip-title{font-family:var(--display);font-size:2rem;color:#b3400a;line-height:1.05}
+.dip-team{font-size:1.6rem;font-weight:700;margin-top:6px!important}
+.dip-stats{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;font-weight:700;margin:8px 0;font-variant-numeric:tabular-nums}
+.dip-sign{font-style:italic;color:#6b5a3a}
+.fame{background:rgba(30,22,56,.85);border:2px solid var(--night-3);border-radius:14px;padding:12px 16px;width:min(460px,100%);text-align:left}
+.fame-h{margin:0 0 6px;font-weight:700;color:var(--glow)}
+.fame-row{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;padding:3px 0;border-top:1px solid var(--night-3)}
+.listen{border-color:var(--glow);color:var(--glow);font-size:1rem;align-self:flex-start}
+.listen .tr{color:var(--glow)}
+.tr{display:none;font-size:.85em;font-weight:400;color:#8fd8e8;margin-top:4px}
+.bubble .tr{color:#5b4a96}
+.es-on .tr{display:block}
+#trBtn{position:fixed;z-index:62;bottom:calc(14px + env(safe-area-inset-bottom,0px));left:calc(14px + env(safe-area-inset-left,0px));
+  background:var(--night-2);border-color:#8fd8e8;color:#8fd8e8;font-weight:700;box-shadow:0 4px 18px rgba(0,0,0,.5)}
+#trBtn:hover{background:#8fd8e8;color:var(--night)}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+
+
+<div id="sky"></div><canvas id="fog"></canvas><div id="flash"></div><div id="redflash"></div><canvas id="confetti"></canvas><div id="bats"></div>
+<button id="trBtn" type="button" aria-pressed="false">🇪🇸 Traducir</button>
+<div class="wrap">
+  <header id="hud" hidden>
+    <div><p class="logo">Escape from the Haunted School</p><div class="team" id="teamLbl"></div></div>
+    <div class="hud">
+      <div class="slots" id="slots" aria-label="Secret password"></div>
+      <div class="chip" title="Candies"><span class="lbl">🍬</span><output id="candyOut">0</output></div>
+      <div class="chip" id="timerBox"><span class="lbl">to midnight</span><output id="clockOut">60:00</output><button id="timerBtn" class="icon-btn" type="button" aria-label="Pause">⏸</button></div>
+      <button id="soundBtn" class="icon-btn" type="button" aria-label="Sound on or off">🔊</button>
+    </div>
+  </header>
+  <main id="stage"></main>
+</div>
+
+<script>
+// ---------- Ghost (eyes follow the pointer) ----------
+let gid=0;
+function ghost(size,mood=""){gid++;return `<div class="gh ${mood}" style="width:${size}px" aria-hidden="true"><svg viewBox="0 0 120 140">
+<path class="body" d="M60 6C30 6 14 30 14 60v70l12-10 12 12 11-12 11 12 11-12 11 12 12-12 12 10V60C106 30 90 6 60 6z" fill="#f6efd9"/>
+<path class="brow" d="M33 40l20 8M87 40l-20 8" stroke="#120d24" stroke-width="5" stroke-linecap="round"/>
+<ellipse cx="44" cy="58" rx="9" ry="12" fill="#120d24"/><ellipse cx="76" cy="58" rx="9" ry="12" fill="#120d24"/>
+<circle class="pupil" cx="44" cy="58" r="3.6" fill="#fff"/><circle class="pupil" cx="76" cy="58" r="3.6" fill="#fff"/>
+<ellipse cx="60" cy="86" rx="9" ry="12" fill="#120d24"/>
+<ellipse class="cheek" cx="32" cy="74" rx="7" ry="4" fill="#ffb3c1" opacity=".55"/><ellipse class="cheek" cx="88" cy="74" rx="7" ry="4" fill="#ffb3c1" opacity=".55"/></svg></div>`}
+addEventListener('pointermove',e=>{document.querySelectorAll('.gh svg').forEach(s=>{const r=s.getBoundingClientRect();const dx=e.clientX-(r.left+r.width/2),dy=e.clientY-(r.top+r.height*.4);const d=Math.hypot(dx,dy)||1;
+  s.querySelectorAll('.pupil').forEach(p=>p.setAttribute('transform',`translate(${dx/d*4.5} ${dy/d*6})`))})});
+function moodGhost(m){document.querySelectorAll('.react .gh, .guide .gh').forEach(g=>{g.classList.remove('mad','happy');void g.offsetWidth;if(m)g.classList.add(m)})}
+
+const SCHOOL=`<svg class="school" viewBox="0 0 520 230" aria-hidden="true">
+<path d="M0 230V200l40-10 50 12 60-14 60 10 80-12 70 14 60-12 60 10 40-6v38z" fill="#0a0716"/>
+<path d="M30 200v-60l-8-6M30 160l14-10M30 175l-12-8" stroke="#0a0716" stroke-width="5" fill="none"/>
+<path d="M480 200v-70l10-8M480 150l-14-12M480 170l12-6" stroke="#0a0716" stroke-width="5" fill="none"/>
+<rect x="110" y="70" width="300" height="140" fill="#1c1533"/><polygon points="100,72 260,10 420,72" fill="#241a42"/>
+<rect x="238" y="20" width="44" height="60" fill="#1c1533"/><circle cx="260" cy="48" r="16" fill="#f6efd9"/><line x1="260" y1="48" x2="260" y2="35" stroke="#120d24" stroke-width="3"/><line x1="260" y1="48" x2="269" y2="48" stroke="#120d24" stroke-width="3"/>
+<g>${[130,180,300,350].map(x=>`<rect class="win-light" x="${x}" y="95" width="34" height="38" rx="3" fill="#ffd36b"/>`).join('')}
+${[130,180,300,350].map(x=>`<rect class="win-light" x="${x}" y="150" width="34" height="38" rx="3" fill="#2e2454"/>`).join('')}</g>
+<path d="M238 210v-54a22 22 0 0 1 44 0v54z" fill="#5c3f24"/>
+<text x="196" y="226" font-size="22">🎃</text><text x="300" y="226" font-size="18">🎃</text>
+<text x="260" y="88" text-anchor="middle" font-size="12" fill="#bdb3dc" font-family="Atkinson Hyperlegible, Verdana" letter-spacing="1">CREC SON FERRER</text></svg>`;
+
+// ---------- Translation toggle ----------
+const T=(en,es)=>`${en}<span class="tr">${es}</span>`;
+const trBtn=document.getElementById('trBtn');
+trBtn.onclick=()=>{const on=document.body.classList.toggle('es-on');trBtn.textContent=on?'🇬🇧 Only English':'🇪🇸 Traducir';trBtn.setAttribute('aria-pressed',on)};
+
+const PER=8; // questions per visit to a room (wrong answers come back at the end)
+const NUM=["twelve","one","two","three","four","five","six","seven","eight","nine","ten","eleven","twelve"];
+const MINW={5:"five",10:"ten",15:"quarter",20:"twenty",25:"twenty-five",30:"half"};
+const HW=n=>NUM[((n-1+24)%12)+1];
+const pad=m=>String(m).padStart(2,'0');
+function timePhrase(h,m){if(m===0)return `It's ${HW(h)} o'clock.`;if(m<=30)return `It's ${MINW[m]} past ${HW(h)}.`;return `It's ${MINW[60-m]} to ${HW(h+1)}.`}
+function clockItem(){const h=1+Math.floor(Math.random()*12),m=5*Math.floor(Math.random()*12),right=timePhrase(h,m);const w=new Set();
+  if(m===0){w.add(`It's ${HW(h+1)} o'clock.`);w.add(`It's ${HW(h-1)} o'clock.`)}
+  else if(m===30){w.add(`It's half past ${HW(h+1)}.`);w.add(`It's half to ${HW(h)}.`)}
+  else if(m<30){w.add(`It's ${MINW[m]} to ${HW(h)}.`);w.add(`It's ${MINW[m]} past ${HW(h+1)}.`)}
+  else{w.add(`It's ${MINW[60-m]} to ${HW(h)}.`);w.add(`It's ${MINW[60-m]} past ${HW(h+1)}.`)}
+  w.delete(right);return {h,m,key:h+':'+m,opts:[right,...[...w].slice(0,2)]}}
+function uniq(make,n){const out=[],seen=new Set();let guard=0;while(out.length<n&&guard++<500){const x=make();if(!seen.has(x.key)){seen.add(x.key);out.push(x)}}return out}
+// parts of the day
+const PARTS=[["in the morning","por la mañana"],["in the afternoon","por la tarde"],["in the evening","por la tarde-noche"],["at night","por la noche"]];
+const partOf=h=>h>=6&&h<12?0:h>=12&&h<18?1:h>=18&&h<22?2:3;
+const ampm=(h,m)=>`${((h+11)%12)+1}:${pad(m)} ${h<12?'am':'pm'}`;
+function partItem(){
+  if(Math.random()<.55){const h=Math.floor(Math.random()*24),m=[0,15,30,45][Math.floor(Math.random()*4)],p=partOf(h);
+    const others=shuffle([0,1,2,3].filter(x=>x!==p)).slice(0,2);
+    return {key:'a'+h+m,q:`It's ${ampm(h,m)}. When is it?`,es:"¿Qué parte del día es?",opts:[PARTS[p][0],...others.map(o=>PARTS[o][0])]}}
+  const p=Math.floor(Math.random()*4),RANGE=[[6,11],[12,17],[18,21],[22,29]];
+  const hourIn=k=>{const [a,b]=RANGE[k];return (a+Math.floor(Math.random()*(b-a+1)))%24};
+  const others=shuffle([0,1,2,3].filter(x=>x!==p)).slice(0,2);
+  return {key:'b'+p+Math.random(),q:`Which time is ${PARTS[p][0]}?`,es:`¿Qué hora es ${PARTS[p][1]}?`,opts:[ampm(hourIn(p),5*Math.floor(Math.random()*12)),...others.map(o=>ampm(hourIn(o),5*Math.floor(Math.random()*12)))]}}
+// listening
+const LROUT=[["🚿","have a shower","has a shower"],["🥣","have breakfast","has breakfast"],["🚌","go to school","goes to school"],["🍝","have lunch","has lunch"],["🏠","go back home","goes back home"],["🍽️","have dinner","has dinner"],["📺","watch TV","watches TV"],["😴","go to bed","goes to bed"],["🧍","get up","gets up"],["👕","get dressed","gets dressed"],["⏰","wake up","wakes up"]];
+const LSUBJ=[["I",0],["You",0],["We",0],["They",0],["My friends",0],["She",1],["He",1],["My mum",1],["Miss Boo",1]];
+function listenItem(){
+  if(Math.random()<.5){const c=clockItem(),d=`${c.h}:${pad(c.m)}`,mirror=`${c.m===0?(c.h%12)+1:c.h}:${pad((60-c.m)%60)}`,other=`${(c.h%12)+1}:${pad(c.m)}`;
+    const opts=[d,...[mirror,other,`${((c.h+10)%12)+1}:${pad(c.m)}`].filter((x,i,a)=>x!==d&&a.indexOf(x)===i).slice(0,2)];
+    return {key:'t'+c.key,say:c.opts[0],opts}}
+  const r=pick(LROUT),s=pick(LSUBJ),h=1+Math.floor(Math.random()*12),o=pick(LROUT.filter(x=>x!==r)),h2=((h+3)%12)+1;
+  return {key:r[1]+s[0]+h,say:`${s[0]} ${r[1+s[1]]} at ${HW(h)} o'clock.`,opts:[`${r[0]} ${h}:00`,`${o[0]} ${h}:00`,`${r[0]} ${h2}:00`]}}
+const ROOMS=[
+ {name:"The Clock Tower",topic:"Telling the time",ico:"🕰️",type:"clock",
+  intro:"The clock tower is cursed! Read each clock correctly to stop the bells.",
+  introEs:"¡La torre del reloj está maldita! Lee bien cada reloj para parar las campanas.",
+  gen:()=>uniq(clockItem,PER).map(c=>({...c,q:"What time is it?",es:"¿Qué hora es?"}))},
+ {name:"The Ghost's Diary",topic:"Daily routines",ico:"📖",type:"choice",
+  intro:"I wrote my routine in Spanish… but I forgot my English! Help me translate it.",
+  introEs:"Escribí mi rutina en castellano… ¡pero se me ha olvidado el inglés! Ayúdame a traducirla.",
+  pool:[["⏰ Despertarse","wake up","wake on","get awake"],["🧍 Levantarse","get up","go up","make up"],["🚿 Ducharse","have a shower","do a shower","make a shower"],
+   ["💇 Peinarse","comb your hair","brush your teeth","wash your hair"],["👕 Vestirse","get dressed","get up","do dressed"],["🥣 Desayunar","have breakfast","have lunch","do breakfast"],
+   ["🪥 Lavarse los dientes","brush your teeth","wash your hair","clean your mouth"],["🚌 Ir al instituto","go to school","go at school","have school"],["📚 Tener clases","have classes","do classes","make classes"],
+   ["🍝 Comer (al mediodía)","have lunch","have dinner","have breakfast"],["🏠 Volver a casa","go back home","go to the home","get home back"],["✏️ Hacer los deberes","do your homework","make your homework","have your homework"],
+   ["🍽️ Cenar","have dinner","have lunch","go dinner"],["📺 Mirar la tele","watch TV","see TV","look TV"],["😴 Irse a la cama","go to bed","go to the bed","get bed"],
+   ["🌅 Por la mañana","in the morning","on the morning","at the morning"],["🌙 Por la noche","at night","in night","on the night"],["☀️ Por la tarde","in the afternoon","at the afternoon","on the afternoon"]]
+   .map(([es,a,b,c])=>({q:es,es:"¿Cómo se dice en inglés?",sayQ:false,opts:[a,b,c]}))},
+ {name:"The Spider's Web",topic:"Parts of the day · am / pm",ico:"🕸️",type:"choice",
+  intro:"The spider only lets you pass if you know the parts of the day. Remember: am = morning, pm = afternoon and evening!",
+  introEs:"La araña solo te deja pasar si sabes las partes del día. Recuerda: am = mañana, pm = tarde y noche.",
+  gen:()=>uniq(partItem,PER)},
+ {name:"The Bats' Calendar",topic:"in · on · at",ico:"🦇",type:"choice",
+  intro:"The bats ate the prepositions from their calendar! Put them back.",
+  introEs:"¡Los murciélagos se comieron las preposiciones de su calendario! Vuelve a ponerlas.",
+  pool:[["Halloween is ___ October 31st.","on","Halloween es el 31 de octubre."],["Zombies rest ___ Sundays.","on","Los zombis descansan los domingos."],["The witch flies ___ Fridays.","on","La bruja vuela los viernes."],
+   ["We have a monster party ___ Saturday.","on","Hacemos una fiesta de monstruos el sábado."],["The vampire's birthday is ___ March 13th.","on","El cumpleaños del vampiro es el 13 de marzo."],["I have English ___ Tuesdays.","on","Tengo inglés los martes."],
+   ["Ghosts fly ___ night.","at","Los fantasmas vuelan por la noche."],["Witch class starts ___ nine o'clock.","at","La clase de brujería empieza a las nueve."],["The bell rings ___ midnight.","at","La campana suena a medianoche."],
+   ["The mummy wakes up ___ half past six.","at","La momia se despierta a las seis y media."],["Monsters relax ___ the weekend.","at","Los monstruos se relajan el fin de semana."],["We have lunch ___ noon.","at","Comemos a mediodía."],
+   ["The bats sleep ___ the morning.","in","Los murciélagos duermen por la mañana."],["We carve pumpkins ___ autumn.","in","Tallamos calabazas en otoño."],["The skeleton was born ___ 1900.","in","El esqueleto nació en 1900."],
+   ["Ghosts are sad ___ summer.","in","Los fantasmas están tristes en verano."],["The witch reads books ___ the evening.","in","La bruja lee libros por la tarde-noche."],["Halloween is ___ October.","in","Halloween es en octubre."],
+   ["The black cat plays ___ the afternoon.","in","El gato negro juega por la tarde."],["My birthday is ___ May.","in","Mi cumpleaños es en mayo."]]
+   .map(([q,a,es])=>({q,es,opts:[a,...["in","on","at"].filter(x=>x!==a)]}))},
+ {name:"The Witch's Kitchen",topic:"Present simple: -s or no -s?",ico:"🧪",type:"typed",
+  intro:"The witch's spell only works with the correct verb. Careful: he / she / it → -s, but I / you / we / they → no -s!",
+  introEs:"El hechizo solo funciona con el verbo correcto. Cuidado: he / she / it → -s, pero I / you / we / they → sin -s.",
+  groups:{
+   he:[["The witch ___ the potion every night.","mix","mixes","La bruja ___ la poción cada noche. (mezclar)"],["The black cat ___ the moon.","watch","watches","El gato negro ___ la luna. (mirar)"],
+    ["The bat ___ over the school at night.","fly","flies","El murciélago ___ sobre la escuela por la noche. (volar)"],["The ghost ___ English with Miss Boo.","study","studies","El fantasma ___ inglés con Miss Boo. (estudiar)"],
+    ["The vampire ___ breakfast at midnight.","have","has","El vampiro ___ el desayuno a medianoche. (tomar)"],["The mummy ___ her bandages on Sundays.","wash","washes","La momia ___ sus vendas los domingos. (lavar)"],
+    ["The baby ghost ___ every night.","cry","cries","El bebé fantasma ___ cada noche. (llorar)"],["The skeleton ___ to bed very late.","go","goes","El esqueleto ___ a la cama muy tarde. (ir)"],
+    ["My mum ___ dinner at nine.","make","makes","Mi madre ___ la cena a las nueve. (hacer)"],["Leo ___ his hair in the morning.","comb","combs","Leo ___ por la mañana. (peinarse)"],
+    ["The werewolf ___ his teeth.","not brush","doesn't brush","El hombre lobo no ___ los dientes. (no cepillar)"],["Miss Boo ___ candy.","not eat","doesn't eat","Miss Boo no ___ caramelos. (no comer)"],
+    ["My brother ___ his homework on Fridays.","not do","doesn't do","Mi hermano no ___ los deberes los viernes. (no hacer)"],["The cat ___ the bats.","catch","catches","El gato ___ a los murciélagos. (atrapar)"]],
+   other:[["I ___ my homework at the CREC.","do","do","Yo ___ los deberes en el CREC. (hacer)"],["I ___ to bed at ten o'clock.","go","go","Yo ___ a la cama a las diez. (ir)"],
+    ["You ___ TV in the evening.","watch","watch","Tú ___ la tele por la tarde-noche. (mirar)"],["You ___ your teeth after breakfast.","brush","brush","Tú ___ los dientes después de desayunar. (cepillar)"],
+    ["We ___ English on Tuesdays.","study","study","Nosotros ___ inglés los martes. (estudiar)"],["We ___ lunch at school.","have","have","Nosotros ___ en el instituto. (comer)"],
+    ["The witches ___ on their brooms.","fly","fly","Las brujas ___ en sus escobas. (volar)"],["Ghosts ___ when they are sad.","cry","cry","Los fantasmas ___ cuando están tristes. (llorar)"],
+    ["My friends ___ football on Fridays.","play","play","Mis amigos ___ a fútbol los viernes. (jugar)"],["Zombies never ___ a shower.","have","have","Los zombis nunca ___. (ducharse)"],
+    ["I ___ spiders.","not like","don't like","No ___ las arañas. (no gustar)"],["We ___ to school on Saturdays.","not go","don't go","No ___ al instituto los sábados. (no ir)"],
+    ["They ___ early on Sundays.","not get up","don't get up","No ___ temprano los domingos. (no levantarse)"],["You ___ scary films.","not watch","don't watch","No ___ películas de miedo. (no mirar)"]]},
+  gen(){const mk=(g,third)=>shuffle(g).slice(0,PER/2).map(([q,verb,ans,es])=>({q,verb,ans,es,third}));return shuffle([...mk(this.groups.he,true),...mk(this.groups.other,false)])}},
+ {name:"The Vampire's Coffin",topic:"Present simple + adverbs",ico:"🧛",type:"choice",
+  intro:"The vampire only opens his coffin for perfect sentences. Choose the correct one!",
+  introEs:"El vampiro solo abre su ataúd con frases perfectas. ¡Elige la correcta!",
+  groups:{
+   I:[["Choose the correct sentence.","Elige la frase correcta.",["I always get up at seven.","I get always up at seven.","I always gets up at seven."]],
+      ["Choose the correct negative.","Elige la frase negativa correcta.",["I don't like spiders.","I doesn't like spiders.","I not like spiders."]],
+      ["Do you like Halloween?","¿Te gusta Halloween?",["Yes, I do.","Yes, I like.","Yes, I am."]],
+      ["Choose the correct sentence.","Elige la frase correcta.",["I am never late for school.","I never am late for school.","I never late for school."]]],
+   you:[["Choose the correct question.","Elige la pregunta correcta.",["Do you often play video games?","Does you often play video games?","Do you play often video games?"]],
+      ["Choose the correct sentence.","Elige la frase correcta.",["You never do your homework on Sundays.","You do never your homework on Sundays.","You never does your homework on Sundays."]],
+      ["Choose the correct question.","Elige la pregunta correcta.",["Are you always scared at night?","Do you always scared at night?","You are always scared at night?"]],
+      ["Choose the correct negative.","Elige la frase negativa correcta.",["You don't watch TV in the morning.","You doesn't watch TV in the morning.","You don't watches TV in the morning."]]],
+   we:[["Choose the correct sentence.","Elige la frase correcta.",["We usually have dinner at 9 pm.","We have usually dinner at 9 pm.","We usually has dinner at 9 pm."]],
+      ["Choose the correct negative.","Elige la frase negativa correcta.",["We don't go to school on Saturdays.","We doesn't go to school on Saturdays.","We don't goes to school on Saturdays."]],
+      ["Do you and your friends watch scary films?","¿Tú y tus amigos veis películas de miedo?",["Yes, we do.","Yes, we does.","Yes, we watch."]],
+      ["Choose the correct sentence.","Elige la frase correcta.",["We are sometimes tired on Mondays.","We sometimes are tired on Mondays.","Sometimes we is tired on Mondays."]]],
+   they:[["Choose the correct sentence.","Elige la frase correcta.",["Ghosts are sometimes friendly.","Ghosts sometimes are friendly.","Sometimes ghosts is friendly."]],
+      ["Choose the correct question.","Elige la pregunta correcta.",["Do the bats sleep in the morning?","Does the bats sleep in the morning?","Do the bats sleeps in the morning?"]],
+      ["Choose the correct negative.","Elige la frase negativa correcta.",["My friends don't eat fish.","My friends doesn't eat fish.","My friends don't eats fish."]],
+      ["Do zombies brush their teeth?","¿Los zombis se lavan los dientes?",["No, they don't.","No, they doesn't.","No, they aren't."]]],
+   he:[["Choose the correct sentence.","Elige la frase correcta.",["The vampire never sleeps at night.","The vampire sleeps never at night.","The vampire never sleep at night."]],
+      ["Choose the correct question.","Elige la pregunta correcta.",["Does the witch like spiders?","Do the witch like spiders?","Does the witch likes spiders?"]],
+      ["Does Miss Boo teach English?","¿Miss Boo enseña inglés?",["Yes, she does.","Yes, she do.","Yes, she teaches."]],
+      ["Choose the correct sentence.","Elige la frase correcta.",["My cat hardly ever sleeps.","My cat sleeps hardly ever.","My cat hardly ever sleep."]]]},
+  gen(){return shuffle(Object.values(this.groups).flatMap(g=>shuffle(g).slice(0,2))).slice(0,PER).map(([q,es,opts])=>({q,es,opts}))}},
+ {name:"The Music Room",topic:"Listening",ico:"🎻",type:"listen",
+  intro:"The haunted piano is playing! Press ▶ Play, listen carefully and choose what you hear. You can listen again.",
+  introEs:"¡El piano encantado está tocando! Pulsa ▶ Play, escucha bien y elige lo que oyes. Puedes escucharlo otra vez.",
+  gen:()=>uniq(listenItem,PER)},
+ {name:"The Haunted Library",topic:"Mediation · Català ⇄ English",ico:"📚",type:"choice",
+  intro:"The old books are in Catalan… and in English! Help me understand them.",
+  introEs:"Los libros antiguos están en catalán… ¡y en inglés! Ayúdame a entenderlos.",
+  pool:[
+   ["Em llevo a les set.","Me levanto a las siete.",["I get up at seven o'clock.","I get up in seven o'clock.","I go up at seven o'clock."],"en"],
+   ["Ella sempre esmorza a casa.","Ella siempre desayuna en casa.",["She always has breakfast at home.","She has always breakfast at home.","She always have breakfast at home."],"en"],
+   ["No mirem la tele al matí.","No miramos la tele por la mañana.",["We don't watch TV in the morning.","We doesn't watch TV in the morning.","We don't watch TV at the morning."],"en"],
+   ["El meu germà fa els deures a la tarda.","Mi hermano hace los deberes por la tarde.",["My brother does his homework in the afternoon.","My brother makes his homework in the afternoon.","My brother do his homework in the afternoon."],"en"],
+   ["Els dilluns tinc anglès.","Los lunes tengo inglés.",["I have English on Mondays.","I have English in Mondays.","I has English on Mondays."],"en"],
+   ["A quina hora sopes?","¿A qué hora cenas?",["What time do you have dinner?","What time does you have dinner?","What time you have dinner?"],"en"],
+   ["Ells mai es dutxen al vespre.","Ellos nunca se duchan por la tarde-noche.",["They never have a shower in the evening.","They have never a shower in the evening.","They never has a shower in the evening."],"en"],
+   ["Són dos quarts de deu.","Son las nueve y media.",["It's half past nine.","It's half past ten.","It's quarter to ten."],"en"],
+   ["És un quart de vuit.","Son las siete y cuarto.",["It's quarter past seven.","It's quarter past eight.","It's quarter to eight."],"en"],
+   ["Són tres quarts de dues.","Son las dos menos cuarto.",["It's quarter to two.","It's quarter past two.","It's quarter to three."],"en"],
+   ["El meu pare treballa de nit.","Mi padre trabaja de noche.",["My dad works at night.","My dad work at night.","My dad works in night."],"en"],
+   ["Te'n vas al llit d'hora?","¿Te vas a la cama temprano?",["Do you go to bed early?","Does you go to bed early?","Do you go to the bed early?"],"en"],
+   ["She hardly ever gets up late.","Ella casi nunca se levanta tarde.",["Ella gairebé mai es lleva tard.","Ella sempre es lleva tard.","Ella mai es lleva d'hora."],"ca"],
+   ["We usually go to school by bus.","Normalmente vamos al instituto en autobús.",["Normalment anem a l'escola amb autobús.","A vegades anem a l'escola amb autobús.","Mai anem a l'escola amb autobús."],"ca"],
+   ["Does your sister comb her hair?","¿Tu hermana se peina?",["La teva germana es pentina?","La teva germana es renta les dents?","La teva germana es vesteix?"],"ca"],
+   ["I don't have lunch at school.","No como en el instituto.",["No dino a l'escola.","No sopo a l'escola.","Dino a l'escola."],"ca"]]
+   .map(([q,es,opts,to])=>({q:to==='en'?`📜 "${q}" → English?`:`📜 "${q}" → Català?`,es:to==='ca'?"¿Qué significa en catalán?":es,opts,sayQ:to==='ca',sayOpts:to==='en'}))}
+];
+
+// Secret sentences: [correct sentence(s), Spanish meaning]. Words are handed out mixed up across the doors.
+const SENTENCES=[
+ [["The vampire never has breakfast in the morning.","In the morning the vampire never has breakfast."],"El vampiro nunca desayuna por la mañana."],
+ [["Ghosts usually go to bed at six o'clock."],"Los fantasmas normalmente se van a la cama a las seis."],
+ [["Do you always brush your teeth before bed?"],"¿Siempre te lavas los dientes antes de dormir?"],
+ [["Miss Boo doesn't watch TV in the evening.","In the evening Miss Boo doesn't watch TV."],"Miss Boo no mira la tele por la tarde-noche."],
+ [["I am always late for school on Mondays.","On Mondays I am always late for school."],"Siempre llego tarde al instituto los lunes."],
+ [["We sometimes study English with Miss Boo at midnight.","At midnight we sometimes study English with Miss Boo."],"A veces estudiamos inglés con Miss Boo a medianoche."],
+ [["My friends hardly ever get up early on Sundays.","On Sundays my friends hardly ever get up early."],"Mis amigos casi nunca se levantan temprano los domingos."],
+ [["We often have dinner with the mummy on Fridays.","On Fridays we often have dinner with the mummy."],"A menudo cenamos con la momia los viernes."],
+ [["You don't comb your hair in the morning.","In the morning you don't comb your hair."],"No te peinas por la mañana."],
+ [["Do the bats usually sleep at home in the afternoon?"],"¿Los murciélagos normalmente duermen en casa por la tarde?"]];
+const KEEP_CAPS=/^(I|Miss|Boo|English|TV|Mondays|Sundays|Fridays)$/;
+const norm=s=>s.toLowerCase().replace(/[.?!,]/g,'').replace(/\s+/g,' ').trim();
+const ND=8;
+function curSent(){const s=SENTENCES[state.sent]||SENTENCES[0];const main=s[0][0];return {main,ok:s[0].map(norm),es:s[1],end:main.slice(-1),words:main.slice(0,-1).split(' ')}}
+function newSentence(){
+  state.sent=Math.floor(Math.random()*SENTENCES.length);
+  const words=curSent().words.map(w=>KEEP_CAPS.test(w)?w:w.toLowerCase());
+  let mixed;do{mixed=shuffle(words)}while(mixed.join(' ')===words.join(' '));
+  const parts=ROOMS.map(()=>[]);mixed.forEach((w,k)=>parts[k%ROOMS.length].push(w));
+  state.parts=shuffle(parts);state.hints=0;
+}
+function myWords(){return state.parts.filter((_,i)=>state.done[i]).flat()}
+const GOOD=[["Correct! The ghosts are scared!","¡Correcto! ¡Los fantasmas tienen miedo!"],["Spooky good!","¡Terroríficamente bien!"],["Yes! Great job!","¡Sí! ¡Muy bien!"],["Perfect! Keep going!","¡Perfecto! ¡Sigue así!"],["Wooo… correct!","Uuuh… ¡correcto!"],["Grrr… you are good!","Grrr… ¡qué buenos sois!"]];
+const BAD=[["BOO! Wrong answer. Try again!","¡BUU! Respuesta incorrecta. ¡Inténtalo otra vez!"],["Hahaha! No… try again!","¡Jajaja! No… ¡inténtalo otra vez!"],["Not quite! Think again.","¡Casi! Piénsalo otra vez."],["Oops! The bats say no.","¡Uy! Los murciélagos dicen que no."]];
+const STORY_ES=[
+ "Es la noche de Halloween en el CREC Son Ferrer. Estás haciendo los deberes… muy tarde.",
+ "De repente… ¡se apagan las luces! Todas las puertas están cerradas con llave. Entonces oyes una voz…",
+ "¡Hola! Soy Miss Boo, el fantasma de la antigua profesora de inglés. Nadie puede salir de esta escuela… ¡a menos que hable un inglés perfecto!",
+ "Hay 5 puertas. Responde a mis preguntas para abrirlas. Cada puerta te da palabras secretas… ¡pero están desordenadas! Cada respuesta correcta te da caramelos.",
+ "Forma la frase secreta y abre la puerta principal antes de medianoche… ¡o te quedarás aquí conmigo PARA SIEMPRE! ¡Jajaja!"
+];
+const STORY=[
+ "It's <b>Halloween night</b> at the <b>CREC Son Ferrer</b>. You are doing your homework… <b>very late</b>. 🌙",
+ "Suddenly… <b>the lights go out!</b> ⚡ All the doors are <b>locked</b>. Then you hear a voice…",
+ "Hello! I'm <b>Miss Boo</b>, the ghost of the old English teacher. 👻 Nobody can leave this school… unless they speak <b>perfect English</b>!",
+ "There are <b>8 doors</b>. Answer my questions to open them. Every door gives you <b>secret words</b> 🔑… but the words are <b>mixed up</b>! Every correct answer gives you <b>candy</b> 🍬.",
+ "Make the <b>secret sentence</b> and open the main gate <b>before midnight</b>… or stay here with me <b>FOREVER</b>! Hahaha!"
+];
+const state={done:ROOMS.map(()=>false),room:null,qi:0,qs:[],team:"",step:0,candy:0,streak:0,best:0,mistakes:0};
+const stage=document.getElementById('stage'),hud=document.getElementById('hud');
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+function esc(s){return String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]))}
+
+// ---------- Sound (Web Audio, no files) ----------
+let AC=null,muted=false,master=null,drone=null;
+function ac(){if(!AC){try{AC=new (window.AudioContext||window.webkitAudioContext)();master=AC.createGain();master.gain.value=.8;master.connect(AC.destination)}catch(e){return null}}if(AC.state==='suspended')AC.resume();return AC}
+function tone(f,d,type='sine',v=.18,slide,delay=0){const a=ac();if(!a||muted)return;const t=a.currentTime+delay,o=a.createOscillator(),g=a.createGain();o.type=type;o.frequency.setValueAtTime(f,t);if(slide)o.frequency.exponentialRampToValueAtTime(slide,t+d);g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(v,t+.02);g.gain.exponentialRampToValueAtTime(.0001,t+d);o.connect(g).connect(master);o.start(t);o.stop(t+d+.05)}
+function noise(d,v=.5,freq=400){const a=ac();if(!a||muted)return;const b=a.createBuffer(1,a.sampleRate*d,a.sampleRate),c=b.getChannelData(0);for(let i=0;i<c.length;i++)c[i]=(Math.random()*2-1)*Math.pow(1-i/c.length,2);
+  const s=a.createBufferSource(),f=a.createBiquadFilter(),g=a.createGain();s.buffer=b;f.type='lowpass';f.frequency.value=freq;g.gain.value=v;s.connect(f).connect(g).connect(master);s.start()}
+const SFX={
+ good(){tone(660,.18,'triangle',.2);tone(990,.3,'triangle',.18,null,.12)},
+ bad(){tone(330,.6,'sawtooth',.09,110)},
+ boo(){const a=ac();if(!a||muted)return;const o=a.createOscillator(),l=a.createOscillator(),lg=a.createGain(),g=a.createGain(),t=a.currentTime;o.type='sine';o.frequency.setValueAtTime(260,t);o.frequency.linearRampToValueAtTime(520,t+.7);o.frequency.linearRampToValueAtTime(300,t+1.3);
+   l.frequency.value=6;lg.gain.value=18;l.connect(lg).connect(o.frequency);g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(.2,t+.15);g.gain.exponentialRampToValueAtTime(.0001,t+1.4);o.connect(g).connect(master);o.start(t);l.start(t);o.stop(t+1.5);l.stop(t+1.5)},
+ creak(){tone(110,.9,'sawtooth',.06,70);tone(160,.6,'square',.025,90,.2)},
+ thunder(){noise(2.2,.9,260)},
+ key(){[523,659,784,1047].forEach((f,i)=>tone(f,.35,'triangle',.16,null,i*.1))},
+ bell(n=3){for(let i=0;i<n;i++){tone(196,2.2,'sine',.25,null,i*1.1);tone(392,1.6,'sine',.08,null,i*1.1);tone(587,1,'sine',.05,null,i*1.1)}},
+ win(){[523,659,784,659,784,1047].forEach((f,i)=>tone(f,.4,'square',.07,null,i*.14));tone(1047,1.2,'triangle',.15,null,.84)},
+ click(){tone(900,.05,'square',.04)}
+};
+function startDrone(){const a=ac();if(!a||drone)return;const g=a.createGain();g.gain.value=muted?0:.05;const o1=a.createOscillator(),o2=a.createOscillator(),lfo=a.createOscillator(),lg=a.createGain();
+  o1.frequency.value=55;o2.frequency.value=55*1.498;o2.detune.value=8;o1.type=o2.type='sine';lfo.frequency.value=.12;lg.gain.value=.03;lfo.connect(lg).connect(g.gain);o1.connect(g);o2.connect(g);g.connect(master);o1.start();o2.start();lfo.start();drone=g}
+const soundBtn=document.getElementById('soundBtn');
+soundBtn.onclick=()=>{muted=!muted;soundBtn.textContent=muted?'🔇':'🔊';if(drone)drone.gain.value=muted?0:.05};
+
+function lightning(){if(reduce)return;const f=document.getElementById('flash');f.classList.remove('on');void f.offsetWidth;f.classList.add('on');setTimeout(()=>SFX.thunder(),150)}
+function redflash(){const r=document.getElementById('redflash');r.classList.add('on');setTimeout(()=>r.classList.remove('on'),300)}
+function swoop(){if(reduce)return;const d=document.createElement('div');d.className='swoop';d.innerHTML=ghost(200,'mad');document.body.appendChild(d);setTimeout(()=>d.remove(),1500)}
+function toast(t){const d=document.createElement('div');d.className='toast';d.textContent=t;if(document.body.classList.contains('es-on')&&t.startsWith('5 minutes'))d.textContent='¡5 minutos para medianoche!';document.body.appendChild(d);setTimeout(()=>d.remove(),1500)}
+function addCandy(n){state.candy+=n;const o=document.getElementById('candyOut');o.textContent=state.candy;o.classList.remove('bump');void o.offsetWidth;o.classList.add('bump');saveGame()}
+
+// bats
+(function(){const box=document.getElementById('bats');
+  const bat=w=>`<svg viewBox="0 0 64 30" width="${w}"><path d="M32 12c-3-6-8-8-14-6 2 3 1 6-2 7-3-4-8-5-14-3 6 3 9 9 10 15 3-3 7-4 11-2 2-3 5-5 9-5s7 2 9 5c4-2 8-1 11 2 1-6 4-12 10-15-6-2-11-1-14 3-3-1-4-4-2-7-6-2-11 0-14 6z" fill="#05030c"/></svg>`;
+  [[12,14,0,46],[28,19,-6,34],[45,23,-12,52],[8,27,-3,28],[60,31,-17,40]].forEach(([top,dur,del,w])=>{const d=document.createElement('div');d.className='bat';d.style.top=top+'%';d.style.animationDuration=dur+'s';d.style.animationDelay=del+'s';d.innerHTML=`<div>${bat(w)}</div>`;box.appendChild(d)});
+})();
+// fog
+(function(){const c=document.getElementById('fog'),x=c.getContext('2d');let W,H;const fit=()=>{W=c.width=innerWidth;H=c.height=innerHeight};fit();addEventListener('resize',fit);
+  const blobs=Array.from({length:9},()=>({x:Math.random(),y:.55+Math.random()*.5,r:.25+Math.random()*.3,v:(Math.random()*.4+.15)/1000*(Math.random()<.5?-1:1)}));
+  function f(){x.clearRect(0,0,W,H);blobs.forEach(b=>{b.x+=b.v;if(b.x>1.4)b.x=-.4;if(b.x<-.4)b.x=1.4;const R=b.r*Math.max(W,H),g=x.createRadialGradient(b.x*W,b.y*H,0,b.x*W,b.y*H,R);g.addColorStop(0,'rgba(190,180,230,.10)');g.addColorStop(1,'rgba(190,180,230,0)');x.fillStyle=g;x.fillRect(0,0,W,H)});if(!reduce)requestAnimationFrame(f)}f();
+})();
+
+function clockSVG(h,m){
+  let t='';for(let k=0;k<60;k++){const a=k*6*Math.PI/180,r0=k%5?92:84;t+=`<line x1="${100+r0*Math.sin(a)}" y1="${100-r0*Math.cos(a)}" x2="${100+97*Math.sin(a)}" y2="${100-97*Math.cos(a)}" stroke="#120d24" stroke-width="${k%5?1:3}"/>`}
+  let n='';for(let i=1;i<=12;i++){const a=i*30*Math.PI/180;n+=`<text x="${100+70*Math.sin(a)}" y="${100-70*Math.cos(a)+7}" text-anchor="middle" font-size="20" font-weight="700" fill="#120d24" font-family="Atkinson Hyperlegible, Verdana, sans-serif">${i}</text>`}
+  const am=m*6,ah=((h%12)+m/60)*30;
+  return `<svg class="clock" viewBox="0 0 200 200" role="img" aria-label="Clock"><circle cx="100" cy="100" r="98" fill="#f6efd9" stroke="#ff8a1f" stroke-width="6"/>${t}${n}
+  <line x1="100" y1="100" x2="100" y2="48" stroke="#1d3a8a" stroke-width="9" stroke-linecap="round" transform="rotate(${ah} 100 100)"/>
+  <line x1="100" y1="100" x2="100" y2="20" stroke="#d62f4b" stroke-width="4" stroke-linecap="round" transform="rotate(${am} 100 100)"/>
+  <circle cx="100" cy="100" r="6" fill="#120d24"/></svg>`;
+}
+function renderSlots(newIdx){document.getElementById('slots').innerHTML=ROOMS.map((r,i)=>`<div class="slot ${state.done[i]?'got':''} ${i===newIdx?'new':''}">${state.done[i]?'✓':'?'}</div>`).join('')}
+
+// ---------- Listen (read aloud in English) ----------
+const canSpeak='speechSynthesis' in window;
+function say(text){if(!canSpeak)return;try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text.replace(/_{2,}/g,' blank ').replace(/[^\w\s'’.,?!:-]/g,' '));u.lang='en-GB';u.rate=.85;
+  const v=speechSynthesis.getVoices().find(x=>/^en(-|_)GB/i.test(x.lang))||speechSynthesis.getVoices().find(x=>/^en/i.test(x.lang));if(v)u.voice=v;speechSynthesis.speak(u)}catch(e){}}
+if(canSpeak){try{speechSynthesis.getVoices();speechSynthesis.onvoiceschanged=()=>{}}catch(e){}}
+function listenBtn(id){return canSpeak?`<button type="button" class="icon-btn listen" id="${id}" aria-label="Listen">🔊 Listen<span class="tr">Escuchar</span></button>`:''}
+
+// ---------- Save progress (this browser only) ----------
+const SAVE_KEY='haunted-school-crec-v4';
+function saveGame(){try{localStorage.setItem(SAVE_KEY,JSON.stringify({team:state.team,done:state.done,candy:state.candy,best:state.best,mistakes:state.mistakes,sent:state.sent,parts:state.parts,hints:state.hints,secs}))}catch(e){}}
+function loadGame(){try{const s=JSON.parse(localStorage.getItem(SAVE_KEY)||'null');if(s&&Array.isArray(s.done)&&s.done.length===ROOMS.length&&Array.isArray(s.parts)&&s.parts.length===ROOMS.length&&SENTENCES[s.sent]&&s.parts.flat().map(w=>w.toLowerCase()).sort().join(' ')===SENTENCES[s.sent][0][0].slice(0,-1).toLowerCase().split(' ').sort().join(' '))return s}catch(e){}return null}
+function clearGame(){try{localStorage.removeItem(SAVE_KEY)}catch(e){}}
+
+function fameHTML(){const f=loadFame();if(!f.length)return '';
+  return `<div class="fame"><p class="fame-h">🏆 Ghost Hunters<span class="tr">Cazafantasmas que han escapado</span></p>${f.slice(0,5).map(r=>`<div class="fame-row"><span>${r.ico} ${esc(r.team)}</span><span class="muted">❌ ${r.mistakes} · 🍬 ${r.candy} · ${esc(r.date)}</span></div>`).join('')}</div>`}
+// ---------- INTRO ----------
+function renderTitle(){
+  hud.hidden=true;const saved=loadGame();const n=saved?saved.done.filter(Boolean).length:0;
+  stage.innerHTML=`<section class="intro">${SCHOOL}<h1>Escape from the Haunted School</h1>
+   <p class="tag">Unit 2 · A day in the life of… · Halloween escape room</p>
+   ${saved?`<button class="big-btn" id="cont" type="button">Continue</button><span class="tr" style="font-size:1rem">Continuar partida</span>
+     <p class="hint">${T(`Team <b>${esc(saved.team)}</b> · ${n}/${ROOMS.length} doors · ${saved.candy} 🍬`,`Equipo ${esc(saved.team)} · ${n}/${ROOMS.length} puertas · ${saved.candy} caramelos`)}</p>
+     <div id="newWrap"><button type="button" id="newGame">New game<span class="tr">Partida nueva</span></button></div>`
+   :`<button class="big-btn" id="go" type="button">Enter if you dare</button><span class="tr" style="font-size:1rem">Entra si te atreves</span>`}
+   <p class="hint">🔊 Sound on!<span class="tr">¡Con sonido!</span></p>${fameHTML()}</section>`;
+  const go=document.getElementById('go');if(go)go.onclick=()=>{ac();SFX.creak();lightning();state.step=0;renderStory()};
+  const cont=document.getElementById('cont');if(cont)cont.onclick=()=>{ac();SFX.creak();lightning();startGame(saved)};
+  const ng=document.getElementById('newGame');if(ng)ng.onclick=()=>{document.getElementById('newWrap').innerHTML=`<p class="hint" style="color:var(--moon)">${T("This deletes the saved game. Are you sure?","Se borrará la partida guardada. ¿Seguro?")}</p>
+    <button type="button" id="yesNew">Yes, start again<span class="tr">Sí, empezar de nuevo</span></button> <button type="button" id="noNew">No</button>`;
+    document.getElementById('yesNew').onclick=()=>{clearGame();ac();SFX.creak();lightning();state.step=0;renderStory()};document.getElementById('noNew').onclick=renderTitle};
+}
+let typing=null;
+function typeInto(el,html){
+  clearInterval(typing);const tmp=document.createElement('div');tmp.innerHTML=html;const full=tmp.textContent;let i=0;el.textContent='';
+  if(reduce){el.innerHTML=html;return}
+  typing=setInterval(()=>{i+=2;el.textContent=full.slice(0,i);if(i%8===0)tone(500+Math.random()*200,.03,'square',.015);if(i>=full.length){clearInterval(typing);el.innerHTML=html}},30);
+}
+function renderStory(){
+  const last=state.step===STORY.length-1;
+  stage.innerHTML=`<section class="intro"><div class="story">${ghost(150)}<div class="bubble"><div id="bub"></div><span class="tr">${STORY_ES[state.step]}</span></div></div>
+   ${listenBtn('lsStory')}
+   <div id="ctrl" style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center"></div>
+   <p class="muted">${state.step+1} / ${STORY.length}</p></section>`;
+  if(state.step===1)lightning();
+  if(state.step===2)SFX.boo();
+  if(state.step===4){SFX.bell(1);moodGhost('mad')}
+  const bub=document.getElementById('bub'),ctrl=document.getElementById('ctrl');
+  typeInto(bub,STORY[state.step]);
+  bub.onclick=()=>{clearInterval(typing);bub.innerHTML=STORY[state.step]};
+  const ls=document.getElementById('lsStory');if(ls)ls.onclick=()=>{const d=document.createElement('div');d.innerHTML=STORY[state.step];say(d.textContent)};
+  ctrl.innerHTML=last
+   ?`<form class="name-form" id="nf"><input id="teamName" placeholder="Your team name / Nombre del equipo" maxlength="24" autocomplete="off" aria-label="Team name"><button class="big-btn" type="submit" style="font-size:1.6rem">Start!</button></form>`
+   :`<button class="big-btn" id="nx" type="button" style="font-size:1.6rem">Next ➜</button>`;
+  if(last)document.getElementById('nf').onsubmit=e=>{e.preventDefault();state.team=document.getElementById('teamName').value.trim()||"The Brave Team";startGame()};
+  else document.getElementById('nx').onclick=()=>{SFX.click();state.step++;renderStory()};
+}
+function startGame(saved){
+  if(saved)Object.assign(state,{team:saved.team,done:saved.done.slice(),candy:saved.candy||0,best:saved.best||0,streak:0,mistakes:saved.mistakes||0,sent:saved.sent,parts:saved.parts,hints:saved.hints||0});
+  else{Object.assign(state,{done:ROOMS.map(()=>false),candy:0,streak:0,best:0,mistakes:0});newSentence()}
+  document.getElementById('candyOut').textContent=state.candy;
+  hud.hidden=false;document.getElementById('teamLbl').textContent="Team: "+state.team;
+  resetTimer();if(saved&&typeof saved.secs==='number'&&saved.secs>0){secs=saved.secs;show()}
+  saveGame();startDrone();runTimer();lightning();renderCorridor();
+}
+
+// ---------- CORRIDOR ----------
+function renderCorridor(newIdx){
+  state.room=null;renderSlots(newIdx);
+  const n=state.done.filter(Boolean).length;
+  const msg=n===0?T("Choose a door. You can open them in any order!","Elige una puerta. ¡Puedes abrirlas en el orden que quieras!")
+    :n<ND?T(`Great! Your words: <b>${esc(myWords().join(' · '))}</b>. ${ND-n} more door${ND-n>1?'s':''} to go…`,`¡Genial! Faltan ${ND-n} puerta${ND-n>1?'s':''}…`)
+    :T("Nooo! You have all the words! Go to the <b>main gate</b> and make the sentence!","¡Nooo! ¡Tenéis todas las palabras! Id a la puerta principal y formad la frase.");
+  stage.innerHTML=`<div class="guide">${ghost(84,n===ND?'mad':'')}<div class="bubble">${msg}</div></div>
+  <div class="doors">${ROOMS.map((r,i)=>`
+    <button class="door ${state.done[i]?'done':''}" data-i="${i}" type="button" aria-label="Door ${i+1}: ${r.name}">
+      <div class="frame"><span class="inside">✓</span>
+        <div class="leaf"><span class="eyes"><i></i><i></i></span><span class="no">${i+1}</span><span class="ico">${r.ico}</span><span class="knob"></span></div></div>
+      <span class="name">${r.name}</span><span class="topic">${r.topic}</span></button>`).join('')}
+    <button class="door exit ${n===ND?'ready':''}" id="exitDoor" type="button" aria-label="Main gate">
+      <div class="frame"><div class="leaf"><span class="no">EXIT</span><span class="ico">🔒</span></div></div>
+      <span class="name">The Main Gate</span><span class="topic">${n}/${ND} doors</span></button>
+  </div>`;
+  stage.querySelectorAll('.door[data-i]').forEach(b=>b.onclick=()=>{const i=+b.dataset.i;
+    if(state.done[i]){SFX.click();return}
+    SFX.creak();b.querySelector('.leaf').style.transform='rotateY(-105deg)';setTimeout(()=>openRoom(i),700)});
+  document.getElementById('exitDoor').onclick=()=>{SFX.creak();renderExit()};
+}
+
+// ---------- ROOM ----------
+function openRoom(i){const r=ROOMS[i];state.room=i;state.qi=0;
+  state.qs=(r.gen?r.gen.call(r):shuffle(r.pool).slice(0,PER)).map(q=>r.type==='typed'?q:{...q,shown:shuffle(q.opts)});renderQ(true)}
+function renderQ(first){
+  const r=ROOMS[state.room],n=state.qs.length;
+  if(state.qi>=n)return renderReward();
+  const q=state.qs[state.qi];
+  let body='',speak='';
+  const optsHTML=()=>`<div class="opts">${q.shown.map(o=>`<button type="button" data-ok="${o===q.opts[0]}">${esc(o)}</button>`).join('')}</div>`;
+  if(r.type==='clock'){body=`<p class="prompt">What time is it?<span class="tr">¿Qué hora es?</span></p>${listenBtn('lsQ')}<div class="clockbox">${clockSVG(q.h,q.m)}${optsHTML()}</div>`;speak="What time is it? "+q.shown.join(' Or: ')}
+  else if(r.type==='listen'){body=`<p class="prompt">🎧 Listen and choose!<span class="tr">¡Escucha y elige!</span></p>
+    ${canSpeak?`<button type="button" class="big-btn" id="playBtn" style="font-size:1.6rem;align-self:flex-start">▶ Play</button>`:`<p class="prompt" style="color:var(--glow)">“${esc(q.say)}”</p>`}${optsHTML()}`}
+  else if(r.type==='choice'){body=`<p class="prompt">${esc(q.q)}<span class="tr">${q.es}</span></p>${listenBtn('lsQ')}${optsHTML()}`;
+    speak=(q.sayQ===false?'':q.q.replace(/📜|→ (English|Català)\?/g,' ')+' ')+(q.sayOpts===false?'':q.shown.join(' Or: '))}
+  else{body=`<p class="prompt">${esc(q.q).replace('___','<u>&nbsp;?&nbsp;</u>')}<span class="es" style="display:block;font-size:1rem;font-weight:400;color:var(--mist)">Verb: <b>${q.verb}</b></span><span class="tr">${q.es}</span></p>${listenBtn('lsQ')}
+    <form class="typed" id="tf"><input id="ans" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="Your answer"><button type="submit">Cast the spell ✨</button></form>`;
+    speak=q.q+' The verb is: '+q.verb+'.'}
+  stage.innerHTML=`<section class="room"><div class="room-top"><h2>${r.ico} ${r.name}</h2><button type="button" id="back">⟵ Corridor</button></div>
+    <div class="progress">${state.qs.map((_,k)=>`<i class="${k<state.qi?'ok':''}"></i>`).join('')}</div>
+    <p class="streak">${state.streak>=2?`🔥 ${state.streak} in a row!`:''}</p>
+    <div class="q" id="q">${body}</div>
+    <div class="react">${ghost(70)}<div class="bubble" id="fb" aria-live="polite">${first?T(r.intro,r.introEs):T(`Question ${state.qi+1} of ${n}. You can do it!`,`Pregunta ${state.qi+1} de ${n}. ¡Tú puedes!`)}</div></div></section>`;
+  document.getElementById('back').onclick=()=>{if(canSpeak)speechSynthesis.cancel();renderCorridor()};
+  const ls=document.getElementById('lsQ');if(ls)ls.onclick=()=>say(speak);
+  const pb=document.getElementById('playBtn');if(pb)pb.onclick=()=>{say(q.say);pb.textContent='🔁 Play again'};
+  const fb=document.getElementById('fb'),qEl=document.getElementById('q');
+  const right=()=>{state.streak++;state.best=Math.max(state.best,state.streak);SFX.good();moodGhost('happy');
+    let gain=10;if(state.streak>0&&state.streak%3===0){gain+=10;toast(`🔥 ${state.streak} in a row! +10 🍬`)}addCandy(gain);
+    const g=pick(GOOD);fb.className='bubble good';fb.innerHTML=T(g[0]+` +${gain} 🍬`,g[1])+(r.type==='listen'?`<span style="display:block;margin-top:4px">🎧 “${esc(q.say)}”</span>`:'');
+    stage.querySelectorAll('.opts button,#tf button').forEach(b=>b.disabled=true);state.qi++;setTimeout(()=>renderQ(false),r.type==='listen'?1900:1100)};
+  const wrong=t=>{state.streak=0;state.mistakes++;saveGame();SFX.bad();moodGhost('mad');redflash();if(state.mistakes%2===1){swoop();SFX.boo()}
+    const b=t||pick(BAD);fb.className='bubble bad';fb.innerHTML=T(b[0],b[1]);qEl.classList.remove('shake');void qEl.offsetWidth;qEl.classList.add('shake');document.querySelector('.streak').textContent=''};
+  if(r.type==='typed'){const f=document.getElementById('tf'),inp=document.getElementById('ans');inp.focus();
+    f.onsubmit=e=>{e.preventDefault();const v=inp.value.trim().toLowerCase().replace(/\s+/g,' ').replace(/^does not /,"doesn't ").replace(/^do not /,"don't ").replace(/’/g,"'");if(!v)return;
+      if(v===q.ans)right();else{const b=q.verb.replace(/^not /,'');let h;
+        if(/^not /.test(q.verb))h=[" Tip: negative → I / you / we / they + don't, he / she / it + doesn't."," Pista: negativa → I / you / we / they + don't, he / she / it + doesn't."];
+        else if(!q.third)h=[" Tip: with I / you / we / they the verb has NO -s!"," Pista: con I / you / we / they el verbo NO lleva -s."];
+        else if(/[^aeiou]y$/.test(b))h=[' Tip: consonant + y → -ies',' Pista: consonante + y → -ies'];else if(/(o|sh|ch|x|ss)$/.test(b))h=[' Tip: -o, -sh, -ch, -x, -ss → + es',' Pista: -o, -sh, -ch, -x, -ss → + es'];else if(b==='have')h=[" Tip: it's irregular!"," Pista: ¡es irregular!"];else h=[' Tip: he / she / it → + s',' Pista: he / she / it → + s'];
+        const m=pick(BAD);wrong([m[0]+h[0],m[1]+h[1]]);inp.select()}}}
+  else stage.querySelectorAll('.opts button').forEach(b=>b.onclick=()=>{
+    if(b.dataset.ok==='true'){b.style.borderColor='var(--slime)';b.style.color='var(--slime)';right();return}
+    // wrong: show the right answer, then send this question to the end of the queue
+    wrong();stage.querySelectorAll('.opts button').forEach(x=>{x.disabled=true;if(x.dataset.ok==='true'){x.style.borderColor='var(--slime)';x.style.color='var(--slime)'}else x.style.opacity=.35});
+    fb.innerHTML+=`<span style="display:block;margin-top:4px">${T(`✅ The answer is: <b>${esc(q.opts[0])}</b>. This question comes back later!`,`La respuesta es: ${esc(q.opts[0])}. ¡Esta pregunta volverá más tarde!`)}</span>`+(r.type==='listen'?`<span style="display:block">🎧 “${esc(q.say)}”</span>`:'');
+    setTimeout(()=>{const it=state.qs.splice(state.qi,1)[0];it.shown=shuffle(it.opts);state.qs.push(it);renderQ(false)},2600)});
+}
+function renderReward(){
+  const i=state.room,r=ROOMS[i],L=state.parts[i];state.done[i]=true;renderSlots(i);lightning();setTimeout(()=>SFX.key(),400);addCandy(20);saveGame();
+  stage.innerHTML=`<section class="room"><div class="reward"><p class="muted">${T(`Door ${i+1} is open! Your secret word${L.length>1?'s are':' is'}:`,`¡La puerta ${i+1} está abierta! ${L.length>1?'Vuestras palabras secretas son':'Vuestra palabra secreta es'}:`)}</p>
+    <div class="key key-words">${L.map(esc).join(' · ')}</div><p>${T(`🔑 Write it down! The words are mixed up: at the end you must make a sentence. &nbsp; Bonus: +20 🍬`,`¡Apuntadlo! Las palabras están desordenadas: al final tendréis que formar una frase. Premio: +20 caramelos`)}</p>
+    <p class="hint">${T("💾 Saved! You can close the game and continue another day.","Guardado. Podéis cerrar el juego y seguir otro día.")}</p>
+    <button class="big-btn" type="button" id="back" style="font-size:1.5rem">Back to the corridor</button></div></section>`;
+  document.getElementById('back').onclick=()=>renderCorridor(i);
+}
+
+// ---------- EXIT ----------
+let built=[];
+function renderExit(){
+  const n=state.done.filter(Boolean).length,s=curSent(),hintN=state.hints||0;built=[];
+  const HINTS=[
+    [`Meaning in Spanish: <b>${esc(s.es)}</b>`,`Significado: ${esc(s.es)}`],
+    [`The first word is: <b>${esc(s.words[0])}</b>`,`La primera palabra es: ${esc(s.words[0])}`],
+    [`The first three words: <b>${esc(s.words.slice(0,3).join(' '))}</b>`,`Las tres primeras palabras: ${esc(s.words.slice(0,3).join(' '))}`]];
+  stage.innerHTML=`<section class="room"><div class="room-top"><h2>🔒 The Main Gate</h2><button type="button" id="back">⟵ Corridor</button></div>
+    <div class="gate" id="gate"><div class="half l"></div><div class="half r"></div><div class="lock">🔒</div></div>
+    ${n<ND?`<div class="react">${ghost(70)}<div class="bubble">${T(`You only opened <b>${n}</b> doors… Open all the doors first! Hahaha!`,`Solo habéis abierto ${n} puertas… ¡Abrid primero todas las puertas! ¡Jajaja!`)}</div></div>`
+    :`<div class="react">${ghost(70,'mad')}<div class="bubble">${T("Your secret words are mixed up! Click them in order to make a correct sentence. Careful with the adverbs and the -s!","¡Vuestras palabras secretas están desordenadas! Pulsadlas en orden para formar una frase correcta. ¡Cuidado con los adverbios y la -s!")}</div></div>
+      ${listenBtn('lsGate')}
+      <div class="answer" id="answer" aria-label="Your sentence"></div>
+      <div class="tiles" id="pool" aria-label="Your words"></div>
+      <div class="row-btns"><button type="button" id="clearBtn">↺ Clear<span class="tr">Borrar</span></button>
+        <button type="button" class="big-btn" id="checkBtn" style="font-size:1.4rem">Open the gate</button></div>
+      ${hintN?`<div class="hints">${HINTS.slice(0,hintN).map(h=>`<p class="hint">💡 ${T(h[0],h[1])}</p>`).join('')}</div>`:''}
+      ${hintN<3?`<button type="button" id="buyHint">💡 Buy a hint: −30 🍬<span class="tr">Comprar una pista: −30 caramelos</span></button>`:''}`}
+    <p id="fb" aria-live="polite" style="font-weight:700;color:var(--blood);margin:0"></p></section>`;
+  document.getElementById('back').onclick=()=>renderCorridor();
+  const ls=document.getElementById('lsGate');if(ls)ls.onclick=()=>say("Put the words in order to make a correct sentence.");
+  const bh=document.getElementById('buyHint');if(bh)bh.onclick=()=>{
+    if(state.candy<30){SFX.bad();document.getElementById('fb').innerHTML=T("You don't have enough candy!","¡No tenéis suficientes caramelos!");return}
+    addCandy(-30);state.hints=hintN+1;saveGame();SFX.key();renderExit()};
+  if(n<ND)return;
+  const words=myWords().map((w,k)=>({w,k}));
+  const draw=()=>{
+    document.getElementById('answer').innerHTML=(built.length?built.map(o=>`<button type="button" class="tile word" data-k="${o.k}">${esc(o.w)}</button>`).join(''):`<span class="muted">${T("Click the words below…","Pulsa las palabras de abajo…")}</span>`)+`<span class="end">${s.end}</span>`;
+    document.getElementById('pool').innerHTML=words.filter(o=>!built.includes(o)).map(o=>`<button type="button" class="tile word" data-k="${o.k}">${esc(o.w)}</button>`).join('');
+    document.querySelectorAll('#pool .tile').forEach(b=>b.onclick=()=>{SFX.click();built.push(words[+b.dataset.k]);draw()});
+    document.querySelectorAll('#answer .tile').forEach(b=>b.onclick=()=>{SFX.click();built=built.filter(o=>o.k!==+b.dataset.k);draw()});
+  };draw();
+  document.getElementById('clearBtn').onclick=()=>{built=[];draw()};
+  document.getElementById('checkBtn').onclick=()=>{const fb=document.getElementById('fb');
+    if(built.length<words.length){SFX.bad();fb.innerHTML=T("Use all your words!","¡Usad todas vuestras palabras!");return}
+    if(s.ok.includes(norm(built.map(o=>o.w).join(' ')))){stopTimer();fb.innerHTML='';document.getElementById('gate').classList.add('open');SFX.creak();setTimeout(()=>SFX.creak(),500);setTimeout(renderWin,2300)}
+    else{state.mistakes++;saveGame();SFX.bad();redflash();moodGhost('mad');fb.innerHTML=T("Wrong sentence! Check the word order.","¡Frase incorrecta! Revisad el orden de las palabras.")}};
+}
+
+// ---------- PRIZE ----------
+const MEDALS=[
+ {max:6,ico:"🥇",en:"Gold Ghost Hunters",es:"Cazafantasmas de oro",col:"#ffd36b"},
+ {max:15,ico:"🥈",en:"Silver Ghost Hunters",es:"Cazafantasmas de plata",col:"#d9dde8"},
+ {max:Infinity,ico:"🥉",en:"Bronze Ghost Hunters",es:"Cazafantasmas de bronce",col:"#e0a072"}];
+const FAME_KEY='haunted-school-crec-fame';
+function loadFame(){try{return JSON.parse(localStorage.getItem(FAME_KEY)||'[]')}catch(e){return []}}
+function addFame(row){try{const f=loadFame();f.push(row);f.sort((a,b)=>a.mistakes-b.mistakes||b.candy-a.candy);localStorage.setItem(FAME_KEY,JSON.stringify(f.slice(0,10)))}catch(e){}}
+function renderWin(){
+  const left=document.getElementById('clockOut').textContent;SFX.win();confetti();
+  const m=MEDALS.find(x=>state.mistakes<=x.max),date=new Date().toLocaleDateString('es-ES');
+  addFame({team:state.team,ico:m.ico,mistakes:state.mistakes,candy:state.candy,date});clearGame();
+  if(drone)drone.gain.value=0;
+  stage.innerHTML=`<section class="room"><div class="win"><div class="big">You escaped!</div>
+    <div class="react" style="justify-content:center">${ghost(90,'mad')}<div class="bubble">${T(`Nooo! ${esc(state.team)}, your English is too good for me! Happy Halloween! 🎃`,`¡Nooo! ${esc(state.team)}, ¡vuestro inglés es demasiado bueno para mí! ¡Feliz Halloween!`)}</div></div>
+    <div class="diploma" style="--medal:${m.col}">
+      <p class="dip-top">CREC Son Ferrer · English Workshop</p>
+      <div class="medal">${m.ico}</div>
+      <p class="dip-title">${m.en}</p><span class="tr">${m.es}</span>
+      <p class="dip-team">${esc(state.team)}</p>
+      <p>${T(`escaped from the Haunted School with the secret sentence:<br><b>“${esc(curSent().main)}”</b>`,`ha escapado de la escuela encantada con la frase secreta.`)}</p>
+      <div class="dip-stats"><span>🍬 ${state.candy}</span><span>❌ ${state.mistakes}</span><span>🔥 ${state.best}</span><span>⏱️ ${left}</span></div>
+      <p class="dip-sign">Miss Boo 👻 · ${date}</p>
+    </div>
+    <p class="hint">${T("📸 Take a photo of your diploma and show it to your teacher!","Haced una foto al diploma y enseñádsela a la profe.")}</p>
+    <p class="hint">${T("🥇 0–6 mistakes · 🥈 7–15 mistakes · 🥉 16 or more","Oro: 0–6 errores · Plata: 7–15 · Bronce: 16 o más")}</p>
+    <button class="big-btn" type="button" id="again" style="font-size:1.5rem">Play again</button></div></section>`;
+  document.getElementById('again').onclick=()=>{if(drone)drone.gain.value=muted?0:.05;renderTitle()};
+}
+function renderMidnight(){
+  lightning();SFX.bell(3);
+  stage.innerHTML=`<section class="room"><div class="win"><div class="big" style="color:var(--blood)">Midnight!</div>
+    <div class="react" style="justify-content:center">${ghost(90,'mad')}<div class="bubble">${T("Bong… bong… bong! Time is up! Now you stay with me… unless you finish the doors! Hahaha!","¡Dong… dong… dong! ¡Se acabó el tiempo! Ahora os quedáis conmigo… ¡a menos que terminéis las puertas! ¡Jajaja!")}</div></div>
+    <button class="big-btn" type="button" id="cont" style="font-size:1.5rem">Keep trying</button></div></section>`;
+  document.getElementById('cont').onclick=()=>renderCorridor();
+}
+
+// ---------- confetti (pumpkins & candy) ----------
+function confetti(){
+  if(reduce)return;const c=document.getElementById('confetti'),x=c.getContext('2d');c.width=innerWidth;c.height=innerHeight;
+  const items=['🎃','🍬','👻','🦇','⭐','🍭'];const ps=Array.from({length:90},()=>({x:Math.random()*c.width,y:-40-Math.random()*c.height,v:2+Math.random()*3,r:Math.random()*6,s:items[Math.floor(Math.random()*items.length)],z:20+Math.random()*20}));
+  let t=0;(function f(){x.clearRect(0,0,c.width,c.height);ps.forEach(p=>{p.y+=p.v;p.x+=Math.sin((p.y+p.r*50)/40);x.font=p.z+'px serif';x.fillText(p.s,p.x,p.y)});if(++t<380)requestAnimationFrame(f);else x.clearRect(0,0,c.width,c.height)})();
+}
+
+// ---------- timer ----------
+let secs=60*60,iv=null;const out=document.getElementById('clockOut'),tb=document.getElementById('timerBtn'),box=document.getElementById('timerBox');
+function show(){out.textContent=String(Math.floor(secs/60)).padStart(2,'0')+':'+String(secs%60).padStart(2,'0');box.classList.toggle('low',secs<=300)}
+function stopTimer(){clearInterval(iv);iv=null;if(typeof saveGame==='function'&&!hud.hidden)saveGame();tb.textContent='▶';tb.setAttribute('aria-label','Resume')}
+function runTimer(){clearInterval(iv);tb.textContent='⏸';tb.setAttribute('aria-label','Pause');iv=setInterval(()=>{if(secs>0){secs--;show();if(secs%10===0)saveGame();if(secs===300){toast('5 minutes to midnight!');SFX.bell(1)}}else{stopTimer();renderMidnight()}},1000)}
+function resetTimer(){stopTimer();secs=60*60;show()}
+tb.onclick=()=>iv?stopTimer():runTimer();
+
+renderTitle();
+</script>
+
+</body>
+</html>
